@@ -20,8 +20,8 @@ class User
   has_many :comments
 
   def self.from_github(id, username, email, avatar_url)
-    user = User.where(github_id: id).first
-    user ||= User.new(username: username, github_id: id, email: email, avatar_url: avatar_url)
+    user = User.where(github_id: id).first ||
+           User.new(github_id: id, email: email)
     if avatar_url && !user.avatar_url
       user.avatar_url = avatar_url.gsub(/\?.+$/, '')
     end
@@ -118,11 +118,7 @@ class User
   end
 
   def stash_list
-    list = []
-    self.stashed_submissions.each do |sub|
-      list << sub.stash_name
-    end
-    return list 
+    self.stashed_submissions.map(&:name)
   end
 
   def clear_stash(filename)

@@ -9,10 +9,10 @@ class Solution
   end
 
   def exercise
-    return @exercise if @exercise
-    exercise = Exercise.new(language, slug)
-    validate exercise
-    @exercise = exercise
+    @exercise ||= begin
+      exercise = Exercise.new(language, slug)
+      validate exercise
+    end
   end
 
   private
