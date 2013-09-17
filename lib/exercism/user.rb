@@ -31,13 +31,13 @@ class User
   end
 
   def random_work
-    return nil if completed.keys.empty?
     completed.keys.shuffle.each do |language|
       work = Submission.pending.where(language: language).in(slug: completed[language]).asc(:nc)
       if work.count > 0
         return work.limit(10).to_a.sample
       end
     end
+    nil
   end
 
   def ongoing
@@ -46,9 +46,9 @@ class User
 
   def done
     @done ||= completed_exercises.map do |lang, exercises|
-      exercises.map do |exercise|
-        latest_submission_on(exercise) || NullSubmission.new(exercise)
-      end
+      exercises.map { |exercise|
+        latest_submission_on(exercise)
+      }
     end.flatten
   end
 
@@ -73,8 +73,7 @@ class User
     doing?(language) || did?(language) || locksmith_in?(language)
   end
 
-  def complete!(exercise, options = {})
-    trail = options[:on]
+  def complete!(exercise)
     self.completed[exercise.language] ||= []
     self.completed[exercise.language] << exercise.slug
     self.current.delete(exercise.language)
@@ -98,7 +97,7 @@ class User
   end
 
   def nitpicker_on?(exercise)
-    locksmith_in?(exercise.language) || completed?(exercise) || working_on?(exercise)
+    locksmith_in?(exercise.language) || completed?(exercise)
   end
 
   def nitpicker?

@@ -45,6 +45,12 @@ class UserTest < Minitest::Test
     assert user.nitpicker_on?(one)
   end
 
+  def test_user_is_not_nitpicker_on_current_assignment
+    user = User.new(current: {'nong' => 'one'})
+    one = Exercise.new('nong', 'one')
+    refute user.nitpicker_on?(one)
+  end
+
   def test_user_not_a_guest
     user = User.new
     refute user.guest?
@@ -133,8 +139,8 @@ class UserTest < Minitest::Test
     user.submissions << create_submission(exercise, :code => "s1", state: 'superseded')
     user.submissions << create_submission(exercise, :code => "s2")
     user.save
+    user.reload
 
-    assert_equal [true], user.ongoing.map(&:submitted?)
     assert_equal ["s2"], user.ongoing.map(&:code)
   end
 
@@ -144,8 +150,8 @@ class UserTest < Minitest::Test
   end
 
   def test_user_done_without_submissions
-    user = User.create(current: {'nong' => 'one'}, completed: {'nong' => ['one']})
-    assert_equal [false], user.done.map(&:submitted?)
+    user = User.create(current: {'nong' => 'one'})
+    assert_equal [], user.done
   end
 
   def test_user_done_with_submissions
@@ -155,8 +161,8 @@ class UserTest < Minitest::Test
     user.submissions << create_submission(exercise, :code => "s1")
     user.submissions << create_submission(exercise, :code => "s2")
     user.save
+    user.reload
 
-    assert_equal [true], user.done.map(&:submitted?)
     assert_equal ["s2"], user.done.map(&:code)
   end
 
